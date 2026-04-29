@@ -28,6 +28,20 @@ def get_db_connection():
 app = FastAPI(title="Performance Spec API")
 
 
+@app.get("/refresh")
+def refresh_data():
+    try:
+        from scraper import scrape_and_update
+
+        scrape_and_update()  # This runs your scraping logic
+        # This sends the user back to the home page after the sync is done
+        return HTMLResponse(
+            "<html><body><script>alert('Data Synced Successfully!'); window.location.href='/';</script></body></html>"
+        )
+    except Exception as e:
+        return {"error": f"Scraper failed: {str(e)}"}
+
+
 @app.get("/", response_class=HTMLResponse)
 def dashboard():
     conn = get_db_connection()
