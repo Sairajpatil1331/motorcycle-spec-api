@@ -2,11 +2,16 @@ import requests
 from bs4 import BeautifulSoup
 import sqlite3
 
-conn = sqlite3.connect("motorcycles.db")
-cursor = conn.cursor()
 
-# THE FAILSAFE: Ensure table exists before trying to delete from it
-cursor.execute("""
+import requests
+
+
+def scrape_and_update():
+    conn = sqlite3.connect("motorcycles.db")
+    cursor = conn.cursor()
+
+    # THE FAILSAFE: Ensure table exists
+    cursor.execute("""
         CREATE TABLE IF NOT EXISTS Bikes (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             model_name TEXT,
@@ -18,8 +23,13 @@ cursor.execute("""
         )
     """)
 
-# Clear old data so we start fresh
-cursor.execute("DELETE FROM Bikes")  # Column already exists
+    # Clear old data
+    cursor.execute("DELETE FROM Bikes")
+    conn.commit()
+
+    # ... rest of your scraping logic ...
+    # (Make sure the rest of your scraper code follows) # Column already exists
+
 
 # Mapping real image URLs to our bikes
 images = {

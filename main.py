@@ -5,6 +5,7 @@ from scraper import scrape_and_update
 
 
 def get_db_connection():
+    # Connect to the correct database
     conn = sqlite3.connect("motorcycles.db")
     conn.row_factory = sqlite3.Row
 
@@ -21,7 +22,7 @@ def get_db_connection():
         )
     """)
     conn.commit()
-    return conn
+    return conn  # Return ONLY at the very end
 
 
 app = FastAPI(title="Performance Spec API")
