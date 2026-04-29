@@ -48,21 +48,26 @@ def dashboard():
     bikes = conn.execute("SELECT * FROM Bikes").fetchall()
     conn.close()
 
-    # A hardcoded map linking the bike name to a high-quality image URL
     image_map = {
-        "Royal Enfield Continental GT 650": "https://imgd.aeplcdn.com/664x374/n/cw/ec/145815/continental-gt-650-right-front-three-quarter.jpeg",
-        "Kawasaki Ninja 400": "https://imgd.aeplcdn.com/664x374/n/cw/ec/131131/ninja-400-right-front-three-quarter-2.jpeg",
-        "Aprilia RS 457": "https://imgd.aeplcdn.com/664x374/n/cw/ec/159495/rs-457-right-front-three-quarter-3.jpeg",
+        "royal enfield continental gt 650": "https://images.unsplash.com/photo-1626074353765-517a681e40be?auto=format&fit=crop&q=80&w=800",
+        "kawasaki ninja 400": "https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&q=80&w=800",
+        "aprilia rs 457": "https://images.unsplash.com/photo-1614165933026-0750fcd503e8?auto=format&fit=crop&q=80&w=800",
     }
 
     bike_cards = ""
     for bike in bikes:
-        # Match the database name to our image map. If it doesn't match, use a placeholder.
-        img = image_map.get(bike["model_name"], "https://via.placeholder.com/300x200")
+        # Clean the name: remove spaces and make it lowercase for easy matching
+        clean_name = bike["model_name"].strip().lower()
+
+        # Try to get the image, otherwise use a dynamic Unsplash motorcycle search
+        img = image_map.get(
+            clean_name,
+            f"https://source.unsplash.com/featured/?motorcycle,{clean_name.replace(' ', ',')}",
+        )
 
         bike_cards += f"""
         <div class="card">
-            <img src="{img}" alt="{bike["model_name"]}">
+            <img src="{img}" alt="{bike["model_name"]}" onerror="this.src='https://images.unsplash.com/photo-1558981806-ec527fa84c39?q=80&w=800'">
             <div class="card-content">
                 <h3>{bike["model_name"]}</h3>
                 <div class="stats">
@@ -75,7 +80,7 @@ def dashboard():
         </div>
         """
 
-    html_content = f"""
+    return f"""
     <!DOCTYPE html>
     <html>
     <head>
@@ -83,18 +88,17 @@ def dashboard():
         <style>
             :root {{ --neon: #00e5ff; --bg: #0a0a0a; --card: #161616; }}
             body {{ font-family: 'Inter', sans-serif; background: var(--bg); color: white; margin: 0; padding: 40px; }}
-            h1 {{ text-align: center; color: var(--neon); font-size: 2.5rem; letter-spacing: 2px; }}
+            h1 {{ text-align: center; color: var(--neon); font-size: 2.5rem; letter-spacing: 2px; text-transform: uppercase; }}
             .sync-btn {{ display: block; width: 150px; margin: 20px auto; text-align: center; background: var(--neon); color: black; padding: 12px; border-radius: 30px; text-decoration: none; font-weight: bold; transition: 0.3s; }}
             .sync-btn:hover {{ transform: scale(1.05); box-shadow: 0 0 15px var(--neon); }}
-            
-            .grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; max-width: 1200px; margin: 40px auto; }}
-            .card {{ background: var(--card); border-radius: 15px; overflow: hidden; border: 1px solid #333; transition: 0.3s; display: flex; flex-direction: column; }}
-            .card:hover {{ border-color: var(--neon); transform: translateY(-10px); }}
-            .card img {{ width: 100%; height: 220px; object-fit: cover; background-color: #222; }}
-            .card-content {{ padding: 20px; flex-grow: 1; }}
-            .card-content h3 {{ margin: 0 0 15px 0; color: var(--neon); font-size: 1.2rem; line-height: 1.4; }}
-            .stats {{ display: flex; flex-direction: column; font-size: 0.95rem; color: #ccc; gap: 8px; }}
-            .price {{ margin-top: 20px; font-size: 1.5rem; font-weight: bold; color: white; }}
+            .grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; max-width: 1200px; margin: 40px auto; }}
+            .card {{ background: var(--card); border-radius: 15px; overflow: hidden; border: 1px solid #333; transition: 0.4s ease; display: flex; flex-direction: column; }}
+            .card:hover {{ border-color: var(--neon); transform: translateY(-10px); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }}
+            .card img {{ width: 100%; height: 220px; object-fit: cover; background: #222; display: block; }}
+            .card-content {{ padding: 25px; flex-grow: 1; }}
+            .card-content h3 {{ margin: 0 0 15px 0; color: var(--neon); font-size: 1.3rem; }}
+            .stats {{ display: flex; flex-direction: column; font-size: 0.95rem; color: #bbb; gap: 10px; }}
+            .price {{ margin-top: 20px; font-size: 1.6rem; font-weight: bold; color: white; border-top: 1px solid #333; padding-top: 15px; }}
         </style>
     </head>
     <body>
