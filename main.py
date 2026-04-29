@@ -3,40 +3,31 @@ from fastapi.responses import HTMLResponse
 import sqlite3
 from scraper import scrape_and_update
 
+
+def get_db_connection():
+    return sqlite3.connect("database.db")
+
+
 app = FastAPI(title="Performance Spec API")
 
 
-@app.get("/refresh")
-def refresh_data():
-    from scraper import scrape_and_update
-
-    scrape_and_update()  # This runs your scraping logic
-    return HTMLResponse(
-        "<html><body><script>alert('Data Synced!'); window.location.href='/';</script></body></html>"
-    )
-
-
-def get_db_connection():
-    conn = sqlite3.connect("motorcycles.db")
-    conn.row_factory = sqlite3.Row
-    return conn
-
-
-# --- NEW STYLED DASHBOARD ENDPOINT ---
 @app.get("/", response_class=HTMLResponse)
 def dashboard():
     conn = get_db_connection()
     bikes = conn.execute("SELECT * FROM Bikes").fetchall()
     conn.close()
 
+    # A hardcoded map linking the bike name to a high-quality image URL
+    image_map = {
+        "Royal Enfield Continental GT 650": "https://imgd.aeplcdn.com/664x374/n/cw/ec/145815/continental-gt-650-right-front-three-quarter.jpeg",
+        "Kawasaki Ninja 400": "https://imgd.aeplcdn.com/664x374/n/cw/ec/131131/ninja-400-right-front-three-quarter-2.jpeg",
+        "Aprilia RS 457": "https://imgd.aeplcdn.com/664x374/n/cw/ec/159495/rs-457-right-front-three-quarter-3.jpeg",
+    }
+
     bike_cards = ""
     for bike in bikes:
-        # Fallback image if one isn't found
-        img = (
-            bike["image_url"]
-            if bike["image_url"]
-            else "https://via.placeholder.com/300x200"
-        )
+        # Match the database name to our image map. If it doesn't match, use a placeholder.
+        img = image_map.get(bike["model_name"], "https://via.placeholder.com/300x200")
 
         bike_cards += f"""
         <div class="card">
@@ -65,27 +56,14 @@ def dashboard():
             .sync-btn {{ display: block; width: 150px; margin: 20px auto; text-align: center; background: var(--neon); color: black; padding: 12px; border-radius: 30px; text-decoration: none; font-weight: bold; transition: 0.3s; }}
             .sync-btn:hover {{ transform: scale(1.05); box-shadow: 0 0 15px var(--neon); }}
             
-            .grid {{ 
-                display: grid; 
-                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
-                gap: 30px; 
-                max-width: 1200px; 
-                margin: 40px auto; 
-            }}
-            
-            .card {{ 
-                background: var(--card); 
-                border-radius: 15px; 
-                overflow: hidden; 
-                border: 1px solid #333; 
-                transition: 0.3s; 
-            }}
+            .grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; max-width: 1200px; margin: 40px auto; }}
+            .card {{ background: var(--card); border-radius: 15px; overflow: hidden; border: 1px solid #333; transition: 0.3s; display: flex; flex-direction: column; }}
             .card:hover {{ border-color: var(--neon); transform: translateY(-10px); }}
-            .card img {{ width: 100%; height: 200px; object-fit: cover; }}
-            .card-content {{ padding: 20px; }}
-            .card-content h3 {{ margin: 0 0 10px 0; color: var(--neon); }}
-            .stats {{ display: flex; flex-direction: column; font-size: 0.9rem; color: #aaa; gap: 5px; }}
-            .price {{ margin-top: 15px; font-size: 1.4rem; font-weight: bold; color: white; }}
+            .card img {{ width: 100%; height: 220px; object-fit: cover; background-color: #222; }}
+            .card-content {{ padding: 20px; flex-grow: 1; }}
+            .card-content h3 {{ margin: 0 0 15px 0; color: var(--neon); font-size: 1.2rem; line-height: 1.4; }}
+            .stats {{ display: flex; flex-direction: column; font-size: 0.95rem; color: #ccc; gap: 8px; }}
+            .price {{ margin-top: 20px; font-size: 1.5rem; font-weight: bold; color: white; }}
         </style>
     </head>
     <body>
