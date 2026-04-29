@@ -5,11 +5,21 @@ import sqlite3
 conn = sqlite3.connect("motorcycles.db")
 cursor = conn.cursor()
 
-# Add the image_url column if it doesn't exist
-try:
-    cursor.execute("ALTER TABLE Bikes ADD COLUMN image_url TEXT")
-except:
-    pass  # Column already exists
+# THE FAILSAFE: Ensure table exists before trying to delete from it
+cursor.execute("""
+        CREATE TABLE IF NOT EXISTS Bikes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            model_name TEXT,
+            horsepower REAL,
+            torque REAL,
+            weight_kg REAL,
+            price_inr REAL,
+            image_url TEXT
+        )
+    """)
+
+# Clear old data so we start fresh
+cursor.execute("DELETE FROM Bikes")  # Column already exists
 
 # Mapping real image URLs to our bikes
 images = {

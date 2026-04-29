@@ -5,7 +5,23 @@ from scraper import scrape_and_update
 
 
 def get_db_connection():
-    return sqlite3.connect("database.db")
+    conn = sqlite3.connect("motorcycles.db")
+    conn.row_factory = sqlite3.Row
+
+    # THE FAILSAFE: Build the table if it doesn't exist
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS Bikes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            model_name TEXT,
+            horsepower REAL,
+            torque REAL,
+            weight_kg REAL,
+            price_inr REAL,
+            image_url TEXT
+        )
+    """)
+    conn.commit()
+    return conn
 
 
 app = FastAPI(title="Performance Spec API")
