@@ -2,6 +2,28 @@ import requests
 from bs4 import BeautifulSoup
 import sqlite3
 
+conn = sqlite3.connect("motorcycles.db")
+cursor = conn.cursor()
+
+# Add the image_url column if it doesn't exist
+try:
+    cursor.execute("ALTER TABLE Bikes ADD COLUMN image_url TEXT")
+except:
+    pass  # Column already exists
+
+# Mapping real image URLs to our bikes
+images = {
+    "Royal Enfield Continental GT 650": "https://imgd.aeplcdn.com/664x374/n/cw/ec/145815/continental-gt-650-right-front-three-quarter.jpeg",
+    "Kawasaki Ninja 400": "https://imgd.aeplcdn.com/664x374/n/cw/ec/131131/ninja-400-right-front-three-quarter-2.jpeg",
+    "Aprilia RS 457": "https://imgd.aeplcdn.com/664x374/n/cw/ec/159495/rs-457-right-front-three-quarter-3.jpeg",
+}
+
+for model, url in images.items():
+    cursor.execute("UPDATE Bikes SET image_url = ? WHERE model_name = ?", (url, model))
+
+conn.commit()
+conn.close()
+
 
 def scrape_bike_data():
     print("Starting extraction engine...")

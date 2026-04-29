@@ -29,83 +29,69 @@ def dashboard():
     bikes = conn.execute("SELECT * FROM Bikes").fetchall()
     conn.close()
 
-    # Create the HTML table rows using a Python loop
-    table_rows = ""
+    bike_cards = ""
     for bike in bikes:
-        table_rows += f"""
-        <tr>
-            <td>{bike["model_name"]}</td>
-            <td>{bike["horsepower"]} bhp</td>
-            <td>{bike["torque"]} Nm</td>
-            <td>{bike["weight_kg"]} kg</td>
-            <td>₹{bike["price_inr"]:,}</td>
-        </tr>
+        # Fallback image if one isn't found
+        img = (
+            bike["image_url"]
+            if bike["image_url"]
+            else "https://via.placeholder.com/300x200"
+        )
+
+        bike_cards += f"""
+        <div class="card">
+            <img src="{img}" alt="{bike["model_name"]}">
+            <div class="card-content">
+                <h3>{bike["model_name"]}</h3>
+                <div class="stats">
+                    <span><b>Power:</b> {bike["horsepower"]} bhp</span>
+                    <span><b>Torque:</b> {bike["torque"]} Nm</span>
+                    <span><b>Weight:</b> {bike["weight_kg"]} kg</span>
+                </div>
+                <div class="price">₹{bike["price_inr"]:,}</div>
+            </div>
+        </div>
         """
 
-    # This is your HTML and CSS combined
     html_content = f"""
     <!DOCTYPE html>
     <html>
     <head>
-        <title>MotoSpec Dashboard</title>
+        <title>MotoSpec Pro</title>
         <style>
-            body {{
-                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                background-color: #121212;
-                color: #e0e0e0;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                padding-top: 50px;
+            :root {{ --neon: #00e5ff; --bg: #0a0a0a; --card: #161616; }}
+            body {{ font-family: 'Inter', sans-serif; background: var(--bg); color: white; margin: 0; padding: 40px; }}
+            h1 {{ text-align: center; color: var(--neon); font-size: 2.5rem; letter-spacing: 2px; }}
+            .sync-btn {{ display: block; width: 150px; margin: 20px auto; text-align: center; background: var(--neon); color: black; padding: 12px; border-radius: 30px; text-decoration: none; font-weight: bold; transition: 0.3s; }}
+            .sync-btn:hover {{ transform: scale(1.05); box-shadow: 0 0 15px var(--neon); }}
+            
+            .grid {{ 
+                display: grid; 
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+                gap: 30px; 
+                max-width: 1200px; 
+                margin: 40px auto; 
             }}
-            h1 {{ color: #00e5ff; margin-bottom: 30px; }}
-            table {{
-                border-collapse: collapse;
-                width: 80%;
-                max-width: 1000px;
-                background-color: #1e1e1e;
-                box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-                border-radius: 8px;
-                overflow: hidden;
+            
+            .card {{ 
+                background: var(--card); 
+                border-radius: 15px; 
+                overflow: hidden; 
+                border: 1px solid #333; 
+                transition: 0.3s; 
             }}
-            th {{
-                background-color: #333333;
-                color: #00e5ff;
-                text-align: left;
-                padding: 15px;
-                text-transform: uppercase;
-                font-size: 14px;
-            }}
-            td {{
-                padding: 15px;
-                border-bottom: 1px solid #333;
-            }}
-            tr:hover {{ background-color: #2a2a2a; transition: 0.3s; }}
-            .container {{ width: 100%; display: flex; justify-content: center; }}
+            .card:hover {{ border-color: var(--neon); transform: translateY(-10px); }}
+            .card img {{ width: 100%; height: 200px; object-fit: cover; }}
+            .card-content {{ padding: 20px; }}
+            .card-content h3 {{ margin: 0 0 10px 0; color: var(--neon); }}
+            .stats {{ display: flex; flex-direction: column; font-size: 0.9rem; color: #aaa; gap: 5px; }}
+            .price {{ margin-top: 15px; font-size: 1.4rem; font-weight: bold; color: white; }}
         </style>
     </head>
     <body>
-        <h1>Performance Motorcycle Tracker</h1>
-        <div class="container">
-        <a href="/refresh" style="text-decoration:none; background:#00e5ff; color:#121212; padding:10px 20px; border-radius:5px; font-weight:bold; margin-bottom:20px; display:inline-block;">
-            Sync Latest Specs
-        </a>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Model Name</th>
-                        <th>Horsepower</th>
-                        <th>Torque</th>
-                        <th>Weight</th>
-                        <th>Price (On-Road)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {table_rows}
-                </tbody>
-
-            </table>
-        </div>
+        <h1>MOTOSPEC PREMIER</h1>
+        <a href="/refresh" class="sync-btn">SYNC DATA</a>
+        <div class="grid">{bike_cards}</div>
     </body>
     </html>
     """
